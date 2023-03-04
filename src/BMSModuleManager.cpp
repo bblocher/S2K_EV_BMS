@@ -232,6 +232,10 @@ void BMSModuleManager::getAllVoltTemp()
             modules[x].readModuleValues();
             Logger::debug("Module voltage: %f", modules[x].getModuleVoltage());
             Logger::debug("Lowest Cell V: %f     Highest Cell V: %f", modules[x].getLowCellV(), modules[x].getHighCellV());
+
+            for (int cellIndex = 1; cellIndex <= MAX_MODULE_CELLS; cellIndex++)
+                Logger::debug("Cell %i: %f", cellIndex, modules[x].getCellVoltage(cellIndex));
+
             Logger::debug("Temp1: %f       Temp2: %f", modules[x].getTemperature(0), modules[x].getTemperature(1));
             packVolt += modules[x].getModuleVoltage();
             if (modules[x].getLowTemp() < lowestPackTemp) lowestPackTemp = modules[x].getLowTemp();
