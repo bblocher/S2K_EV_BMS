@@ -312,45 +312,45 @@ void BMSModuleManager::printPackSummary()
             Logger::console("  Voltage: %fV   (%fV-%fV)     Temperatures: (%fC-%fC)", modules[y].getModuleVoltage(), 
                             modules[y].getLowCellV(), modules[y].getHighCellV(), modules[y].getLowTemp(), modules[y].getHighTemp());
 
-            SerialUSB.print("  Currently balancing cells: ");
+            SERIAL_CONSOLE.print("  Currently balancing cells: ");
             for (int i = 0; i < 6; i++)
             {                
                 if (modules[y].getBalancingState(i) == 1) 
                 {                    
-                    SerialUSB.print(i);
-                    SerialUSB.print(" ");
+                    SERIAL_CONSOLE.print(i);
+                    SERIAL_CONSOLE.print(" ");
                 }
             }
-            SerialUSB.println();
+            SERIAL_CONSOLE.println();
 
             if (faults > 0)
             {
-                Logger::console("  MODULE IS FAULTED: %d", faults);
+                Logger::console("  MODULE IS FAULTED:");
                 if (faults & 1)
                 {
-                    SerialUSB.print("    Overvoltage Cell Numbers (1-6): ");
+                    SERIAL_CONSOLE.print("    Overvoltage Cell Numbers (1-6): ");
                     for (int i = 0; i < 6; i++)
                     {
                         if (COV & (1 << i)) 
                         {
-                            SerialUSB.print(i+1);
-                            SerialUSB.print(" ");
+                            SERIAL_CONSOLE.print(i+1);
+                            SERIAL_CONSOLE.print(" ");
                         }
                     }
-                    SerialUSB.println();
+                    SERIAL_CONSOLE.println();
                 }
                 if (faults & 2)
                 {
-                    SerialUSB.print("    Undervoltage Cell Numbers (1-6): ");
+                    SERIAL_CONSOLE.print("    Undervoltage Cell Numbers (1-6): ");
                     for (int i = 0; i < 6; i++)
                     {
                         if (CUV & (1 << i)) 
                         {
-                            SerialUSB.print(i+1);
-                            SerialUSB.print(" ");
+                            SERIAL_CONSOLE.print(i+1);
+                            SERIAL_CONSOLE.print(" ");
                         }
                     }
-                    SerialUSB.println();
+                    SERIAL_CONSOLE.println();
                 }
                 if (faults & 4)
                 {
@@ -405,7 +405,7 @@ void BMSModuleManager::printPackSummary()
                     Logger::console("    Address not registered");
                 }
             }
-            if (faults > 0 || alerts > 0) SerialUSB.println();
+            if (faults > 0 || alerts > 0) SERIAL_CONSOLE.println();
         }
     }
 }
@@ -436,28 +436,28 @@ void BMSModuleManager::printPackDetails()
             COV = modules[y].getCOVCells();
             CUV = modules[y].getCUVCells();
 
-            SerialUSB.print("Module #");
-            SerialUSB.print(y);
-            if (y < 10) SerialUSB.print(" ");
-            SerialUSB.print("  ");
-            SerialUSB.print(modules[y].getModuleVoltage());
-            SerialUSB.print("V");
+            SERIAL_CONSOLE.print("Module #");
+            SERIAL_CONSOLE.print(y);
+            if (y < 10) SERIAL_CONSOLE.print(" ");
+            SERIAL_CONSOLE.print("  ");
+            SERIAL_CONSOLE.print(modules[y].getModuleVoltage());
+            SERIAL_CONSOLE.print("V");
             for (int i = 0; i < 6; i++)
             {
-                if (cellNum < 10) SerialUSB.print(" ");
-                SerialUSB.print("  Cell");
-                SerialUSB.print(cellNum++);
-                SerialUSB.print(": ");
-                SerialUSB.print(modules[y].getCellVoltage(i));
-                SerialUSB.print("V");
-                if (modules[y].getBalancingState(i) == 1) SerialUSB.print("*");
-                else SerialUSB.print(" ");
+                if (cellNum < 10) SERIAL_CONSOLE.print(" ");
+                SERIAL_CONSOLE.print("  Cell");
+                SERIAL_CONSOLE.print(cellNum++);
+                SERIAL_CONSOLE.print(": ");
+                SERIAL_CONSOLE.print(modules[y].getCellVoltage(i));
+                SERIAL_CONSOLE.print("V");
+                if (modules[y].getBalancingState(i) == 1) SERIAL_CONSOLE.print("*");
+                else SERIAL_CONSOLE.print(" ");
             }
-            SerialUSB.print("  Neg Term Temp: ");
-            SerialUSB.print(modules[y].getTemperature(0));
-            SerialUSB.print("C  Pos Term Temp: ");
-            SerialUSB.print(modules[y].getTemperature(1)); 
-            SerialUSB.println("C");
+            SERIAL_CONSOLE.print("  Neg Term Temp: ");
+            SERIAL_CONSOLE.print(modules[y].getTemperature(0));
+            SERIAL_CONSOLE.print("C  Pos Term Temp: ");
+            SERIAL_CONSOLE.print(modules[y].getTemperature(1)); 
+            SERIAL_CONSOLE.println("C");
         }
     }
 }
