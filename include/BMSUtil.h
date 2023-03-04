@@ -41,15 +41,16 @@ public:
 
         if (Logger::isDebug())
         {
-            SERIALCONSOLE.print("Sending: ");
-            SERIALCONSOLE.print(addrByte, HEX);
-            SERIALCONSOLE.print(" ");
+            SERIAL_CONSOLE.print("Sending: ");
+            SERIAL_CONSOLE.print(addrByte, HEX);
+            SERIAL_CONSOLE.print(" ");
             for (int x = 1; x < dataLen; x++) {
-                SERIALCONSOLE.print(data[x], HEX);
-                SERIALCONSOLE.print(" ");
+                SERIAL_CONSOLE.print(data[x], HEX);
+                SERIAL_CONSOLE.print(" ");
             }
-            if (isWrite) SERIALCONSOLE.print(genCRC(data, dataLen), HEX);
-            SERIALCONSOLE.println();
+            if (isWrite)
+                SERIAL_CONSOLE.print(genCRC(data, dataLen), HEX);
+            SERIAL_CONSOLE.println();
         }
         
         data[0] = orig;
@@ -57,14 +58,15 @@ public:
 
     static int getReply(uint8_t *data, int maxLen)
     { 
-        int numBytes = 0; 
-        if (Logger::isDebug()) SERIALCONSOLE.print("Reply: ");
+        int numBytes = 0;
+        if (Logger::isDebug())
+            SERIAL_CONSOLE.print("Reply: ");
         while (SERIAL.available() && numBytes < maxLen)
         {
             data[numBytes] = SERIAL.read();
             if (Logger::isDebug()) {
-                SERIALCONSOLE.print(data[numBytes], HEX);
-                SERIALCONSOLE.print(" ");
+                SERIAL_CONSOLE.print(data[numBytes], HEX);
+                SERIAL_CONSOLE.print(" ");
             }
             numBytes++;
         }
@@ -72,7 +74,8 @@ public:
         {
             while (SERIAL.available()) SERIAL.read();
         }
-        if (Logger::isDebug()) SERIALCONSOLE.println();
+        if (Logger::isDebug())
+            SERIAL_CONSOLE.println();
         return numBytes;
     }
     

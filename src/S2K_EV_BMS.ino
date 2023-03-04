@@ -8,12 +8,8 @@
 #include "BMSModuleManager.h"
 #include "SystemIO.h"
 #include <due_can.h>
-#include <due_wire.h>
-#include <Wire_EEPROM.h>
 
-//#define BMS_BAUD  612500
 #define BMS_BAUD  617647
-//#define BMS_BAUD  608695
 
 BMSModuleManager bms;
 EEPROMSettings settings;
@@ -48,27 +44,17 @@ void serialSpecialInit(Usart *pUsart, uint32_t baudRate)
 
 void loadSettings()
 {
-    EEPROM.read(EEPROM_PAGE, settings);
-
-    if (settings.version != EEPROM_VERSION) //if settings are not the current version then erase them and set defaults
-    {
-        Logger::console("Resetting to factory defaults");
-        settings.version = EEPROM_VERSION;
-        settings.checksum = 0;
-        settings.canSpeed = 500000;
-        settings.batteryID = 0x01; //in the future should be 0xFF to force it to ask for an address
-        settings.OverVSetpoint = 4.1f;
-        settings.UnderVSetpoint = 2.3f;
-        settings.OverTSetpoint = 65.0f;
-        settings.UnderTSetpoint = -10.0f;
-        settings.balanceVoltage = 3.9f;
-        settings.balanceHyst = 0.04f;
-        settings.logLevel = 2;
-        EEPROM.write(EEPROM_PAGE, settings);
-    }
-    else {
-        Logger::console("Using stored values from EEPROM");
-    }
+    settings.version = EEPROM_VERSION;
+    settings.checksum = 0;
+    settings.canSpeed = 500000;
+    settings.batteryID = 0x01; //in the future should be 0xFF to force it to ask for an address
+    settings.OverVSetpoint = 4.1f;
+    settings.UnderVSetpoint = 2.3f;
+    settings.OverTSetpoint = 65.0f;
+    settings.UnderTSetpoint = -10.0f;
+    settings.balanceVoltage = 3.9f;
+    settings.balanceHyst = 0.04f;
+    settings.logLevel = 2;
         
     Logger::setLoglevel((Logger::LogLevel)settings.logLevel);
 }
@@ -91,28 +77,33 @@ void initializeCAN()
 void setup() 
 {
     delay(4000);  //just for easy debugging. It takes a few seconds for USB to come up properly on most OS's
-    SERIALCONSOLE.begin(115200);
-    SERIALCONSOLE.println("Starting up!");
+    SERIAL_CONSOLE.begin(115200);
+    SERIAL_CONSOLE.println("Starting up!");
     SERIAL.begin(BMS_BAUD);
 #if defined (__arm__) && defined (__SAM3X8E__)
     serialSpecialInit(USART0, BMS_BAUD); //required for Due based boards as the stock core files don't support 612500 baud.
 #endif
 
-    SERIALCONSOLE.println("Started serial interface to BMS.");
-
+    SERIAL_CONSOLE.println("Started serial interface to BMS.");
     pinMode(13, INPUT);
 
+    SERIAL_CONSOLE.println("Loading settings.");
     loadSettings();
+
+    SERIAL_CONSOLE.println("Initializing CAN.");
     initializeCAN();
 
+    SERIAL_CONSOLE.println("Initializing system IO.");
     systemIO.setup();
 
+    SERIAL_CONSOLE.println("Initializing BMS.");
     bms.renumberBoardIDs();
 
     //Logger::setLoglevel(Logger::Debug);
 
     lastUpdate = 0;
 
+    SERIAL_CONSOLE.println("Clearing faults.");
     bms.clearFaults();
 }
 

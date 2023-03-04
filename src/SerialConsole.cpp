@@ -24,8 +24,6 @@
 
  */
 
-#include <due_wire.h>
-#include <Wire_EEPROM.h>
 #include "SerialConsole.h"
 #include "Logger.h"
 #include "BMSModuleManager.h"
@@ -54,8 +52,9 @@ void SerialConsole::init() {
     whichDisplay = 0;
 }
 
-void SerialConsole::loop() {  
-    if (SERIALCONSOLE.available()) {
+void SerialConsole::loop() {
+    if (SERIAL_CONSOLE.available())
+    {
         serialEvent();
     }
     if (printPrettyDisplay && (millis() > (prettyCounter + 3000)))
@@ -108,7 +107,7 @@ void SerialConsole::printMenu() {
  */
 void SerialConsole::serialEvent() {
     int incoming;
-    incoming = SERIALCONSOLE.read();
+    incoming = SERIAL_CONSOLE.read();
     if (incoming == -1) { //false alarm....
         return;
     }
@@ -257,10 +256,6 @@ void SerialConsole::handleConfigCmd() {
     } else {
         Logger::console("Unknown command");
     }
-    if (needEEPROMWrite)
-    {
-        EEPROM.write(EEPROM_PAGE, settings);
-    }
 }
 
 void SerialConsole::handleShortCmd() {
@@ -329,43 +324,43 @@ void SerialConsole::handleShortCmd() {
 }
 
 /*
-    if (SERIALCONSOLE.available()) 
+    if (SERIAL_CONSOLE.available())
     {
-        char y = SERIALCONSOLE.read();
+        char y = SERIAL_CONSOLE.read();
         switch (y)
         {
         case '1': //ascii 1
             renumberBoardIDs();  // force renumber and read out
             break;
         case '2': //ascii 2
-            SERIALCONSOLE.println();
+            SERIAL_CONSOLE.println();
             findBoards();
             break;
-        case '3': //activate cell balance for 5 seconds 
-            SERIALCONSOLE.println();
-            SERIALCONSOLE.println("Balancing");
+        case '3': //activate cell balance for 5 seconds
+            SERIAL_CONSOLE.println();
+            SERIAL_CONSOLE.println("Balancing");
             cellBalance();
             break;
       case '4': //clear all faults on all boards, required after Reset or FPO (first power on)
-       SERIALCONSOLE.println();
-       SERIALCONSOLE.println("Clearing Faults");
+       SERIAL_CONSOLE.println();
+       SERIAL_CONSOLE.println("Clearing Faults");
        clearFaults();
       break;
 
       case '5': //read out the status of first board
-       SERIALCONSOLE.println();
-       SERIALCONSOLE.println("Reading status");
+       SERIAL_CONSOLE.println();
+       SERIAL_CONSOLE.println("Reading status");
        readStatus(1);
       break;
 
       case '6': //Read out the limit setpoints of first board
-       SERIALCONSOLE.println();
-       SERIALCONSOLE.println("Reading Setpoints");
+       SERIAL_CONSOLE.println();
+       SERIAL_CONSOLE.println("Reading Setpoints");
        readSetpoint(1);
-       SERIALCONSOLE.println(OVolt);
-       SERIALCONSOLE.println(UVolt);
-       SERIALCONSOLE.println(Tset);
-      break; 
+       SERIAL_CONSOLE.println(OVolt);
+       SERIAL_CONSOLE.println(UVolt);
+       SERIAL_CONSOLE.println(Tset);
+      break;
 
       case '0': //Send all boards into Sleep state
        Serial.println();

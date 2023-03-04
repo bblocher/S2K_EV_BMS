@@ -325,7 +325,7 @@ void BMSModuleManager::printPackSummary()
 
             if (faults > 0)
             {
-                Logger::console("  MODULE IS FAULTED:");
+                Logger::console("  MODULE IS FAULTED: %d", faults);
                 if (faults & 1)
                 {
                     SerialUSB.print("    Overvoltage Cell Numbers (1-6): ");

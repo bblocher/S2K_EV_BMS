@@ -148,24 +148,24 @@ boolean Logger::isDebug() {
  */
 void Logger::log(LogLevel level, char *format, va_list args) {
     lastLogTime = millis();
-    SERIALCONSOLE.print(lastLogTime);
-    SERIALCONSOLE.print(" - ");
+    SERIAL_CONSOLE.print(lastLogTime);
+    SERIAL_CONSOLE.print(" - ");
 
     switch (level) {
     case Debug:
-        SERIALCONSOLE.print("DEBUG");
+        SERIAL_CONSOLE.print("DEBUG");
         break;
     case Info:
-        SERIALCONSOLE.print("INFO");
+        SERIAL_CONSOLE.print("INFO");
         break;
     case Warn:
-        SERIALCONSOLE.print("WARNING");
+        SERIAL_CONSOLE.print("WARNING");
         break;
     case Error:
-        SERIALCONSOLE.print("ERROR");
+        SERIAL_CONSOLE.print("ERROR");
         break;
     }
-    SERIALCONSOLE.print(": ");
+    SERIAL_CONSOLE.print(": ");
 
     logMessage(format, args);
 }
@@ -195,69 +195,69 @@ void Logger::logMessage(char *format, va_list args) {
             if (*format == '\0')
                 break;
             if (*format == '%') {
-                SERIALCONSOLE.print(*format);
+                SERIAL_CONSOLE.print(*format);
                 continue;
             }
             if (*format == 's') {
                 register char *s = (char *) va_arg( args, int );
-                SERIALCONSOLE.print(s);
+                SERIAL_CONSOLE.print(s);
                 continue;
             }
             if (*format == 'd' || *format == 'i') {
-                SERIALCONSOLE.print(va_arg( args, int ), DEC);
+                SERIAL_CONSOLE.print(va_arg(args, int), DEC);
                 continue;
             }
             if (*format == 'f') {
-                SERIALCONSOLE.print(va_arg( args, double ), 3);
+                SERIAL_CONSOLE.print(va_arg(args, double), 3);
                 continue;
             }
             if (*format == 'x') {
-                SERIALCONSOLE.print(va_arg( args, int ), HEX);
+                SERIAL_CONSOLE.print(va_arg(args, int), HEX);
                 continue;
             }
             if (*format == 'X') {
-                SERIALCONSOLE.print("0x");
-                SERIALCONSOLE.print(va_arg( args, int ), HEX);
+                SERIAL_CONSOLE.print("0x");
+                SERIAL_CONSOLE.print(va_arg(args, int), HEX);
                 continue;
             }
             if (*format == 'b') {
-                SERIALCONSOLE.print(va_arg( args, int ), BIN);
+                SERIAL_CONSOLE.print(va_arg(args, int), BIN);
                 continue;
             }
             if (*format == 'B') {
-                SERIALCONSOLE.print("0b");
-                SERIALCONSOLE.print(va_arg( args, int ), BIN);
+                SERIAL_CONSOLE.print("0b");
+                SERIAL_CONSOLE.print(va_arg(args, int), BIN);
                 continue;
             }
             if (*format == 'l') {
-                SERIALCONSOLE.print(va_arg( args, long ), DEC);
+                SERIAL_CONSOLE.print(va_arg(args, long), DEC);
                 continue;
             }
 
             if (*format == 'c') {
-                SERIALCONSOLE.print(va_arg( args, int ));
+                SERIAL_CONSOLE.print(va_arg(args, int));
                 continue;
             }
             if (*format == 't') {
                 if (va_arg( args, int ) == 1) {
-                    SERIALCONSOLE.print("T");
+                    SERIAL_CONSOLE.print("T");
                 } else {
-                    SERIALCONSOLE.print("F");
+                    SERIAL_CONSOLE.print("F");
                 }
                 continue;
             }
             if (*format == 'T') {
                 if (va_arg( args, int ) == 1) {
-                    SERIALCONSOLE.print("TRUE");
+                    SERIAL_CONSOLE.print("TRUE");
                 } else {
-                    SERIALCONSOLE.print("FALSE");
+                    SERIAL_CONSOLE.print("FALSE");
                 }
                 continue;
             }
 
         }
-        SERIALCONSOLE.print(*format);
+        SERIAL_CONSOLE.print(*format);
     }
-    SERIALCONSOLE.println();
+    SERIAL_CONSOLE.println();
 }
 
