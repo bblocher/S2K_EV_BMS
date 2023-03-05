@@ -232,10 +232,6 @@ void BMSModuleManager::getAllVoltTemp()
             modules[x].readModuleValues();
             Logger::debug("Module voltage: %f", modules[x].getModuleVoltage());
             Logger::debug("Lowest Cell V: %f     Highest Cell V: %f", modules[x].getLowCellV(), modules[x].getHighCellV());
-
-            for (int cellIndex = 1; cellIndex <= MAX_MODULE_CELLS; cellIndex++)
-                Logger::debug("Cell %i: %f", cellIndex, modules[x].getCellVoltage(cellIndex));
-
             Logger::debug("Temp1: %f       Temp2: %f", modules[x].getTemperature(0), modules[x].getTemperature(1));
             packVolt += modules[x].getModuleVoltage();
             if (modules[x].getLowTemp() < lowestPackTemp) lowestPackTemp = modules[x].getLowTemp();
@@ -446,17 +442,16 @@ void BMSModuleManager::printPackDetails()
             SERIAL_CONSOLE.print("  ");
             SERIAL_CONSOLE.print(modules[y].getModuleVoltage());
             SERIAL_CONSOLE.print("V");
-            for (int i = 0; i < 6; i++)
-            {
-                if (cellNum < 10) SERIAL_CONSOLE.print(" ");
-                SERIAL_CONSOLE.print("  Cell");
-                SERIAL_CONSOLE.print(cellNum++);
-                SERIAL_CONSOLE.print(": ");
-                SERIAL_CONSOLE.print(modules[y].getCellVoltage(i));
-                SERIAL_CONSOLE.print("V");
-                if (modules[y].getBalancingState(i) == 1) SERIAL_CONSOLE.print("*");
-                else SERIAL_CONSOLE.print(" ");
-            }
+
+            SERIAL_CONSOLE.println();
+            for (int cellIndex = 0; cellIndex < MAX_MODULE_CELLS; cellIndex++)
+                Logger::info("Cell %i: %f%s",
+                             cellIndex + 1,
+                             modules[y].getCellVoltage(cellIndex),
+                             (modules[y].getBalancingState(cellIndex) == 1 ? "*" : ""));
+
+            Logger::info("Cell Delta: %fV", modules[y].getHighCellV() - modules[y].getLowCellV());
+
             SERIAL_CONSOLE.print("  Neg Term Temp: ");
             SERIAL_CONSOLE.print(modules[y].getTemperature(0));
             SERIAL_CONSOLE.print("C  Pos Term Temp: ");
