@@ -34,7 +34,7 @@ uint32_t Logger::lastLogTime = 0;
  * printf() style, see Logger::log()
  *
  */
-void Logger::debug(char *message, ...) {
+void Logger::debug(const char *message, ...) {
     if (logLevel > Debug)
         return;
     va_list args;
@@ -47,7 +47,7 @@ void Logger::debug(char *message, ...) {
  * Output a info message with a variable amount of parameters
  * printf() style, see Logger::log()
  */
-void Logger::info(char *message, ...) {
+void Logger::info(const char *message, ...) {
     if (logLevel > Info)
         return;
     va_list args;
@@ -60,7 +60,7 @@ void Logger::info(char *message, ...) {
  * Output a warning message with a variable amount of parameters
  * printf() style, see Logger::log()
  */
-void Logger::warn(char *message, ...) {
+void Logger::warn(const char *message, ...) {
     if (logLevel > Warn)
         return;
     va_list args;
@@ -73,7 +73,7 @@ void Logger::warn(char *message, ...) {
  * Output a error message with a variable amount of parameters
  * printf() style, see Logger::log()
  */
-void Logger::error(char *message, ...) {
+void Logger::error(const char *message, ...) {
     if (logLevel > Error)
         return;
     va_list args;
@@ -86,7 +86,7 @@ void Logger::error(char *message, ...) {
  * Output a comnsole message with a variable amount of parameters
  * printf() style, see Logger::logMessage()
  */
-void Logger::console(char *message, ...) {
+void Logger::console(const char *message, ...) {
     va_list args;
     va_start(args, message);
     Logger::logMessage(message, args);
@@ -146,24 +146,26 @@ boolean Logger::isDebug() {
  * %t - prints the next parameter as boolean ('T' or 'F')
  * %T - prints the next parameter as boolean ('true' or 'false')
  */
-void Logger::log(LogLevel level, char *format, va_list args) {
+void Logger::log(LogLevel level, const char *format, va_list args) {
     lastLogTime = millis();
     SERIAL_CONSOLE.print(lastLogTime);
     SERIAL_CONSOLE.print(" - ");
 
     switch (level) {
-    case Debug:
-        SERIAL_CONSOLE.print("DEBUG");
-        break;
-    case Info:
-        SERIAL_CONSOLE.print("INFO");
-        break;
-    case Warn:
-        SERIAL_CONSOLE.print("WARNING");
-        break;
-    case Error:
-        SERIAL_CONSOLE.print("ERROR");
-        break;
+        case Debug:
+            SERIAL_CONSOLE.print("DEBUG");
+            break;
+        case Info:
+            SERIAL_CONSOLE.print("INFO");
+            break;
+        case Warn:
+            SERIAL_CONSOLE.print("WARNING");
+            break;
+        case Error:
+            SERIAL_CONSOLE.print("ERROR");
+            break;
+        case Off:
+            return;
     }
     SERIAL_CONSOLE.print(": ");
 
@@ -188,7 +190,7 @@ void Logger::log(LogLevel level, char *format, va_list args) {
  * %t - prints the next parameter as boolean ('T' or 'F')
  * %T - prints the next parameter as boolean ('true' or 'false')
  */
-void Logger::logMessage(char *format, va_list args) {
+void Logger::logMessage(const char *format, va_list args) {
     for (; *format != 0; ++format) {
         if (*format == '%') {
             ++format;

@@ -339,7 +339,7 @@ void BMSModule::balanceCells()
         delay(2);
         BMSUtil::getReply(buff, 30);
 
-        if (Logger::isDebug()) // read registers back out to check if everthing is good
+        if (Logger::isDebug()) // read registers back out to check if everything is good
         {
             Logger::debug("Reading back balancing registers:");
             delay(50);

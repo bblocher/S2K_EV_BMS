@@ -57,7 +57,7 @@ void BMSModuleManager::setupBoards()
             {
                 Logger::debug("00 found");
                 //look for a free address to use
-                for (int y = 1; y < 63; y++) 
+                for (int y = 1; y <= MAX_MODULE_ADDR; y++) 
                 {
                     if (!modules[y].isExisting())
                     {
@@ -126,7 +126,7 @@ void BMSModuleManager::renumberBoardIDs()
     uint8_t buff[8];
     int attempts = 1;
 
-    for (int y = 1; y < 63; y++) 
+    for (int y = 1; y <= MAX_MODULE_ADDR; y++) 
     {
         modules[y].setExists(false);
         numFoundModules = 0;
@@ -298,7 +298,7 @@ void BMSModuleManager::printPackSummary()
     Logger::console("Modules: %i    Voltage: %fV   Avg Cell Voltage: %fV     Avg Temp: %fC ", numFoundModules, 
                     getPackVoltage(),getAvgCellVolt(), getAvgTemperature());
     Logger::console("");
-    for (int y = 1; y < 63; y++)
+    for (int y = 1; y <= MAX_MODULE_ADDR; y++)
     {
         if (modules[y].isExisting())
         {
@@ -412,12 +412,6 @@ void BMSModuleManager::printPackSummary()
 
 void BMSModuleManager::printPackDetails()
 {
-    uint8_t faults;
-    uint8_t alerts;
-    uint8_t COV;
-    uint8_t CUV;
-    int cellNum = 0;
-
     Logger::console("");
     Logger::console("");
     Logger::console("");
@@ -427,15 +421,10 @@ void BMSModuleManager::printPackDetails()
     Logger::console("Modules: %i    Voltage: %fV   Avg Cell Voltage: %fV     Avg Temp: %fC ", numFoundModules, 
                     getPackVoltage(),getAvgCellVolt(), getAvgTemperature());
     Logger::console("");
-    for (int y = 1; y < 63; y++)
+    for (int y = 1; y <= MAX_MODULE_ADDR; y++)
     {
         if (modules[y].isExisting())
         {
-            faults = modules[y].getFaults();
-            alerts = modules[y].getAlerts();
-            COV = modules[y].getCOVCells();
-            CUV = modules[y].getCUVCells();
-
             SERIAL_CONSOLE.print("Module #");
             SERIAL_CONSOLE.print(y);
             if (y < 10) SERIAL_CONSOLE.print(" ");
@@ -463,11 +452,11 @@ void BMSModuleManager::printPackDetails()
 
 void BMSModuleManager::processCANMsg(CAN_FRAME &frame)
 {
-    uint8_t battId = (frame.id >> 16) & 0xF;
+    //uint8_t battId = (frame.id >> 16) & 0xF;
     uint8_t moduleId = (frame.id >> 8) & 0xFF;
     uint8_t cellId = (frame.id) & 0xFF;
     
-    if (moduleId = 0xFF)  //every module
+    if (moduleId == 0xFF)  //every module
     {
         if (cellId == 0xFF) sendBatterySummary();        
         else 

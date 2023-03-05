@@ -7,7 +7,7 @@
 
 //Define this to be the serial port the Tesla BMS modules are connected to.
 //On the Due you need to use a USART port (Serial1, Serial2, Serial3) and update the call to serialSpecialInit if not Serial1
-#define SERIAL  Serial1
+#define BMS_SERIAL  Serial1
 
 #define REG_DEV_STATUS      0
 #define REG_GPAI            1

@@ -92,13 +92,6 @@ void SerialConsole::printMenu() {
     Logger::console("   TEMPLIMLO=%f - Low limit for cell temperature in degrees C", settings.UnderTSetpoint);
     Logger::console("   BALVOLT=%f - Voltage at which to begin cell balancing", settings.balanceVoltage);
     Logger::console("   BALHYST=%f - How far voltage must dip before balancing is turned off", settings.balanceHyst);
-
-    float OverVSetpoint;
-    float UnderVSetpoint;
-    float OverTSetpoint;
-    float UnderTSetpoint;
-    float balanceVoltage;
-    float balanceHyst;
 }
 
 /*	There is a help menu (press H or h or ?)
@@ -140,14 +133,12 @@ void SerialConsole::handleConfigCmd() {
     int i;
     int newValue;
     float newFloat;
-    bool needEEPROMWrite = false;
-
+    
     //Logger::debug("Cmd size: %i", ptrBuffer);
     if (ptrBuffer < 6)
         return; //4 digit command, =, value is at least 6 characters
     cmdBuffer[ptrBuffer] = 0; //make sure to null terminate
     String cmdString = String();
-    unsigned char whichEntry = '0';
     i = 0;
 
     while (cmdBuffer[i] != '=' && i < ptrBuffer) {
@@ -171,7 +162,6 @@ void SerialConsole::handleConfigCmd() {
         if (newValue >= 33000 && newValue <= 1000000) {
             settings.canSpeed = newValue;
             Logger::console("Setting CAN speed to %i", newValue);
-            needEEPROMWrite = true;
         }
         else Logger::console("Invalid speed. Enter a value between 33000 and 1000000");
     } else if (cmdString == String("LOGLEVEL")) {
@@ -202,54 +192,46 @@ void SerialConsole::handleConfigCmd() {
             Logger::setLoglevel(Logger::Off);
             break;
         } 
-        needEEPROMWrite = true;
     } else if (cmdString == String("BATTERYID")) {
         if (newValue > 0 && newValue < 15) {
             settings.batteryID = newValue;
             bms.setBatteryID();
-            needEEPROMWrite = true;
             Logger::console("Battery ID set to: %i", newValue);
         }
         else Logger::console("Invalid battery ID. Please enter a value between 1 and 14");
     } else if (cmdString == String("VOLTLIMHI")) {
         if (newFloat >= 0.0f && newFloat <= 6.00f) {
             settings.OverVSetpoint = newFloat; 
-            needEEPROMWrite = true;
             Logger::console("Cell Voltage Upper Limit set to: %f", settings.OverVSetpoint);
         }
         else Logger::console("Invalid upper cell voltage limit. Please enter a value 0.0 to 6.0");
     } else if (cmdString == String("VOLTLIMLO")) {
         if (newFloat >= 0.0f && newFloat <= 6.0f) {
             settings.UnderVSetpoint = newFloat;
-            needEEPROMWrite = true;
             Logger::console("Cell Voltage Lower Limit set to %f", settings.UnderVSetpoint);
         }
         else Logger::console("Invalid lower cell voltage limit. Please enter a value 0.0 to 6.0");
     } else if (cmdString == String("BALVOLT")) {
         if (newFloat >= 0.0f && newFloat <= 6.0f) {
             settings.balanceVoltage = newFloat;
-            needEEPROMWrite = true;
             Logger::console("Balance voltage set to %f", settings.balanceVoltage);
         }
         else Logger::console("Invalid balancing voltage. Please enter a value 0.0 to 6.0");
     } else if (cmdString == String("BALHYST")) {
         if (newFloat >= 0.0f && newFloat <= 1.0f) {
             settings.balanceHyst = newFloat;
-            needEEPROMWrite = true;
             Logger::console("Balance hysteresis set to %f", settings.balanceHyst);
         }
         else Logger::console("Invalid balance hysteresis. Please enter a value 0.0 to 1.0");        
     } else if (cmdString == String("TEMPLIMHI")) {
         if (newFloat >= 0.0f && newFloat <= 100.0f) {
             settings.OverTSetpoint = newFloat;
-            needEEPROMWrite=true;
             Logger::console("Module Temperature Upper Limit set to: %f", settings.OverTSetpoint);
         }
         else Logger::console("Invalid temperature upper limit please enter a value 0.0 to 100.0");
     } else if (cmdString == String("TEMPLIMLO")) {
         if (newFloat >= -20.00f && newFloat <= 120.0f) {
             settings.UnderTSetpoint = newFloat;
-            needEEPROMWrite = true;
             Logger::console("Module Temperature Lower Limit set to: %f", settings.UnderTSetpoint);
         }
         else Logger::console("Invalid temperature lower limit please enter a value between -20.0 and 120.0");        
@@ -259,8 +241,6 @@ void SerialConsole::handleConfigCmd() {
 }
 
 void SerialConsole::handleShortCmd() {
-    uint8_t val;
-
     switch (cmdBuffer[0]) {
     case 'h':
     case '?':
