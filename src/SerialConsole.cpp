@@ -86,12 +86,12 @@ void SerialConsole::printMenu() {
     Logger::console("   BATTERYID=%i - Set battery ID for CAN protocol (1-14)", settings.batteryID);
 
     Logger::console("\nBATTERY MANAGEMENT CONTROLS\n");
-    Logger::console("   VOLTLIMHI=%f - High limit for cells in volts", settings.OverVSetpoint);
-    Logger::console("   VOLTLIMLO=%f - Low limit for cells in volts", settings.UnderVSetpoint);
-    Logger::console("   TEMPLIMHI=%f - High limit for cell temperature in degrees C", settings.OverTSetpoint);
-    Logger::console("   TEMPLIMLO=%f - Low limit for cell temperature in degrees C", settings.UnderTSetpoint);
+    Logger::console("   VOLTLIMHI=%f - High limit for cells in volts", settings.OverVoltage);
+    Logger::console("   VOLTLIMLO=%f - Low limit for cells in volts", settings.UnderVoltage);
+    Logger::console("   TEMPLIMHI=%f - High limit for cell temperature in degrees C", settings.TempMax);
+    Logger::console("   TEMPLIMLO=%f - Low limit for cell temperature in degrees C", settings.TempMin);
     Logger::console("   BALVOLT=%f - Voltage at which to begin cell balancing", settings.balanceVoltage);
-    Logger::console("   BALHYST=%f - How far voltage must dip before balancing is turned off", settings.balanceHyst);
+    Logger::console("   BALHYST=%f - How far voltage must dip before balancing is turned off", settings.balanceHysteresis);
 }
 
 /*	There is a help menu (press H or h or ?)
@@ -201,14 +201,14 @@ void SerialConsole::handleConfigCmd() {
         else Logger::console("Invalid battery ID. Please enter a value between 1 and 14");
     } else if (cmdString == String("VOLTLIMHI")) {
         if (newFloat >= 0.0f && newFloat <= 6.00f) {
-            settings.OverVSetpoint = newFloat; 
-            Logger::console("Cell Voltage Upper Limit set to: %f", settings.OverVSetpoint);
+            settings.OverVoltage = newFloat;
+            Logger::console("Cell Voltage Upper Limit set to: %f", settings.OverVoltage);
         }
         else Logger::console("Invalid upper cell voltage limit. Please enter a value 0.0 to 6.0");
     } else if (cmdString == String("VOLTLIMLO")) {
         if (newFloat >= 0.0f && newFloat <= 6.0f) {
-            settings.UnderVSetpoint = newFloat;
-            Logger::console("Cell Voltage Lower Limit set to %f", settings.UnderVSetpoint);
+            settings.UnderVoltage = newFloat;
+            Logger::console("Cell Voltage Lower Limit set to %f", settings.UnderVoltage);
         }
         else Logger::console("Invalid lower cell voltage limit. Please enter a value 0.0 to 6.0");
     } else if (cmdString == String("BALVOLT")) {
@@ -219,20 +219,20 @@ void SerialConsole::handleConfigCmd() {
         else Logger::console("Invalid balancing voltage. Please enter a value 0.0 to 6.0");
     } else if (cmdString == String("BALHYST")) {
         if (newFloat >= 0.0f && newFloat <= 1.0f) {
-            settings.balanceHyst = newFloat;
-            Logger::console("Balance hysteresis set to %f", settings.balanceHyst);
+            settings.balanceHysteresis = newFloat;
+            Logger::console("Balance hysteresis set to %f", settings.balanceHysteresis);
         }
         else Logger::console("Invalid balance hysteresis. Please enter a value 0.0 to 1.0");        
     } else if (cmdString == String("TEMPLIMHI")) {
         if (newFloat >= 0.0f && newFloat <= 100.0f) {
-            settings.OverTSetpoint = newFloat;
-            Logger::console("Module Temperature Upper Limit set to: %f", settings.OverTSetpoint);
+            settings.TempMax = newFloat;
+            Logger::console("Module Temperature Upper Limit set to: %f", settings.TempMax);
         }
         else Logger::console("Invalid temperature upper limit please enter a value 0.0 to 100.0");
     } else if (cmdString == String("TEMPLIMLO")) {
         if (newFloat >= -20.00f && newFloat <= 120.0f) {
-            settings.UnderTSetpoint = newFloat;
-            Logger::console("Module Temperature Lower Limit set to: %f", settings.UnderTSetpoint);
+            settings.TempMin = newFloat;
+            Logger::console("Module Temperature Lower Limit set to: %f", settings.TempMin);
         }
         else Logger::console("Invalid temperature lower limit please enter a value between -20.0 and 120.0");        
     } else {

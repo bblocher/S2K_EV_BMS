@@ -7,12 +7,12 @@ extern EEPROMSettings settings;
 // testing 123
 BMSModule::BMSModule()
 {
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < MAX_MODULE_CELLS; i++)
     {
         cellVolt[i] = 0.0f;
         lowestCellVolt[i] = 5.0f;
         highestCellVolt[i] = 0.0f;
-        balanceState[i] = 0;
+        balanceState[i] = false;
     }
     moduleVolt = 0.0f;
     temperatures[0] = 0.0f;
@@ -41,7 +41,7 @@ void BMSModule::readStatus()
     alerts = buff[3];
     faults = buff[4];
     COVFaults = buff[5];
-    CUVFaults = buff[6];
+    CUVFaults = buff[MAX_MODULE_CELLS];
 }
 
 uint8_t BMSModule::getFaults()
@@ -131,9 +131,9 @@ bool BMSModule::readModuleValues()
                 highestModuleVolt = moduleVolt;
             if (moduleVolt < lowestModuleVolt)
                 lowestModuleVolt = moduleVolt;
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < MAX_MODULE_CELLS; i++)
             {
-                cellVolt[i] = (buff[5 + (i * 2)] * 256 + buff[6 + (i * 2)]) * 0.000381493f;
+                cellVolt[i] = (buff[5 + (i * 2)] * 256 + buff[MAX_MODULE_CELLS + (i * 2)]) * 0.000381493f;
                 if (lowestCellVolt[i] > cellVolt[i])
                     lowestCellVolt[i] = cellVolt[i];
                 if (highestCellVolt[i] < cellVolt[i])
@@ -191,7 +191,7 @@ float BMSModule::getCellVoltage(int cell)
 float BMSModule::getLowCellV()
 {
     float lowVal = 10.0f;
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < MAX_MODULE_CELLS; i++)
         if (cellVolt[i] < lowVal)
             lowVal = cellVolt[i];
     return lowVal;
@@ -200,7 +200,7 @@ float BMSModule::getLowCellV()
 float BMSModule::getHighCellV()
 {
     float hiVal = 0.0f;
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < MAX_MODULE_CELLS; i++)
         if (cellVolt[i] > hiVal)
             hiVal = cellVolt[i];
     return hiVal;
@@ -209,9 +209,9 @@ float BMSModule::getHighCellV()
 float BMSModule::getAverageV()
 {
     float avgVal = 0.0f;
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < MAX_MODULE_CELLS; i++)
         avgVal += cellVolt[i];
-    avgVal /= 6.0f;
+    avgVal /= MAX_MODULE_CELLS;
     return avgVal;
 }
 
@@ -298,30 +298,11 @@ void BMSModule::setExists(bool ex)
     exists = ex;
 }
 
-void BMSModule::balanceCells()
+// bit 0 - 5 are to activate cell balancing 1-6
+void BMSModule::setBalanceState(uint8_t moduleAddress, uint8_t balance)
 {
     uint8_t payload[4];
     uint8_t buff[30];
-    uint8_t balance = 0; // bit 0 - 5 are to activate cell balancing 1-6
-
-    payload[0] = moduleAddress << 1;
-    payload[1] = REG_BAL_CTRL;
-    payload[2] = 0; // writing zero to this register resets balance time and must be done before setting balance resistors again.
-    BMSUtil::sendData(payload, 3, true);
-    delay(2);
-    BMSUtil::getReply(buff, 30);
-
-    for (int i = 0; i < 6; i++)
-    {
-        if ((balanceState[i] == 0) && (getCellVoltage(i) > settings.balanceVoltage))
-            balanceState[i] = 1;
-
-        if (/*(balanceState[i] == 1) &&*/ (getCellVoltage(i) < (settings.balanceVoltage - settings.balanceHyst)))
-            balanceState[i] = 0;
-
-        if (balanceState[i] == 1)
-            balance |= (1 << i);
-    }
 
     if (balance != 0) // only send balance command when needed
     {
@@ -358,6 +339,50 @@ void BMSModule::balanceCells()
             BMSUtil::getReply(buff, 30);
         }
     }
+}
+
+void BMSModule::balanceCells()
+{
+    uint8_t balance = 0; // bit 0 - 5 are to activate cell balancing 1-6
+
+    // Find lowest cell voltage (default to float max)
+    float lowestCellVoltage = getLowCellV();
+
+    // Set balance state based on the lowest cell voltage
+    for (int i = 0; i < MAX_MODULE_CELLS; i++)
+    {
+        // Balance if the cell voltage is above the balance voltage and the difference between the cell voltage and the lowest cell voltage is greater than the hysteresis
+        if (getCellVoltage(i) >= settings.balanceVoltage && getCellVoltage(i) > lowestCellVoltage + settings.balanceHysteresis)
+            balanceState[i] = true;
+
+        // Stop balancing if the cell voltage is below the balance voltage or the lowest cell voltage
+        if (getCellVoltage(i) < settings.balanceVoltage || getCellVoltage(i) <= lowestCellVoltage)
+            balanceState[i] = false;
+
+        // Set the balance bit
+        if (balanceState[i])
+            balance |= (1 << i);
+    }
+
+    // Set the balance state
+    setBalanceState(moduleAddress, balance);
+}
+
+void BMSModule::balanceReset()
+{
+    uint8_t payload[4];
+    uint8_t buff[30];
+
+    payload[0] = moduleAddress << 1;
+    payload[1] = REG_BAL_CTRL;
+    payload[2] = 0; // writing zero to this register resets balance time and must be done before setting balance resistors again.
+    BMSUtil::sendData(payload, 3, true);
+    delay(2);
+    BMSUtil::getReply(buff, 30);
+
+    // Reset balance state
+    for (int i = 0; i < MAX_MODULE_CELLS; i++)
+        balanceState[i] = false;
 }
 
 uint8_t BMSModule::getBalancingState(int cell)
