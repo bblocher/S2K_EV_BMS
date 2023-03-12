@@ -16,10 +16,21 @@ BMSModuleManager::BMSModuleManager()
     lowestPackTemp = 200.0f;
     highestPackTemp = -100.0f;
     isFaulted = false;
+    lastBalance = 0;
+    lastUpdate = 0;
+    isReset = false;
+}
+
+void BMSModuleManager::balanceReset()
+{
+    for (int address = 1; address <= MAX_MODULE_ADDR; address++)
+    {
+        if (modules[address].isExisting()) modules[address].balanceReset();
+    }
 }
 
 void BMSModuleManager::balanceCells()
-{  
+{
     for (int address = 1; address <= MAX_MODULE_ADDR; address++)
     {
         if (modules[address].isExisting()) modules[address].balanceCells();
@@ -27,9 +38,9 @@ void BMSModuleManager::balanceCells()
 }
 
 /*
- * Try to set up any unitialized boards. Send a command to address 0 and see if there is a response. If there is then there is
- * still at least one unitialized board. Go ahead and give it the first ID not registered as already taken.
- * If we send a command to address 0 and no one responds then every board is inialized and this routine stops.
+ * Try to set up any uninitialized boards. Send a command to address 0 and see if there is a response. If there is then there is
+ * still at least one uninitialized board. Go ahead and give it the first ID not registered as already taken.
+ * If we send a command to address 0 and no one responds then every board is uninitialized and this routine stops.
  * Don't run this routine until after the boards have already been enumerated.\
  * Note: The 0x80 conversion it is looking might in theory block the message from being forwarded so it might be required
  * To do all of this differently. Try with multiple boards. The alternative method would be to try to set the next unused
@@ -567,3 +578,31 @@ void BMSModuleManager::setBatteryID()
     Can0.setRXFilter(0, canID, 0x1FFF0000ul, true);
 }
 
+void BMSModuleManager::process()
+{
+    u_int32_t timestamp = millis();
+
+    // Each interval, reset the balance flags to check voltage without balancing
+    if (!isReset && timestamp > (lastBalance + BALANCE_INTERVAL))
+    {
+        balanceReset();
+        isReset = true;
+    }
+
+    // Check if we need to balance the cells
+    if (timestamp > (lastBalance + BALANCE_INTERVAL + BALANCE_RESET_DELAY))
+    {
+
+        balanceCells();
+        lastBalance = timestamp;
+        isReset = false;
+    }
+
+    // Update cell voltages and temperatures
+    if (timestamp > (lastUpdate + 100))
+    {
+        getAllVoltTemp();
+        lastUpdate = timestamp;
+    }
+
+}

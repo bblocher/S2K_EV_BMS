@@ -14,7 +14,6 @@
 BMSModuleManager bms;
 EEPROMSettings settings;
 SerialConsole console;
-uint32_t lastUpdate;
 
 //This code only applicable to Due to fixup lack of functionality in the arduino core.
 #if defined (__arm__) && defined (__SAM3X8E__)
@@ -48,14 +47,14 @@ void loadSettings()
     settings.checksum = 0;
     settings.canSpeed = 500000;
     settings.batteryID = 0x01; //in the future should be 0xFF to force it to ask for an address
-    settings.OverVSetpoint = 4.1f;
-    settings.UnderVSetpoint = 2.3f;
-    settings.OverTSetpoint = 65.0f;
-    settings.UnderTSetpoint = -10.0f;
-    settings.balanceVoltage = 3.9f;
-    settings.balanceHyst = 0.04f;
-    settings.logLevel = 2;
-        
+    settings.OverVoltage = 4.1f;
+    settings.UnderVoltage = 2.4f;
+    settings.TempMax = 65.0f;
+    settings.TempMin = -10.0f;
+    settings.balanceVoltage = 4.0f;
+    settings.balanceHysteresis = 0.02f;
+    settings.logLevel = 1;
+
     Logger::setLoglevel((Logger::LogLevel)settings.logLevel);
 }
 
@@ -76,7 +75,7 @@ void initializeCAN()
 
 void setup() 
 {
-    delay(4000);  //just for easy debugging. It takes a few seconds for USB to come up properly on most OS's
+    delay(1000); // just for easy debugging. It takes a few seconds for USB to come up properly on most OS's
     SERIAL_CONSOLE.begin(115200);
     SERIAL_CONSOLE.println("Starting up!");
     BMS_SERIAL.begin(BMS_BAUD);
@@ -100,9 +99,7 @@ void setup()
     bms.renumberBoardIDs();
 
     //Logger::setLoglevel(Logger::Debug);
-
-    lastUpdate = 0;
-
+    
     SERIAL_CONSOLE.println("Clearing faults.");
     bms.clearFaults();
 }
@@ -112,18 +109,11 @@ void loop()
     CAN_FRAME incoming;
 
     console.loop();
-
-    if (millis() > (lastUpdate + 1000))
-    {    
-        lastUpdate = millis();
-        bms.balanceCells();
-        bms.getAllVoltTemp();
-    }
+    bms.process();
 
     if (Can0.available()) {
         Can0.read(incoming);
         bms.processCANMsg(incoming);
     }
-    
 }
 

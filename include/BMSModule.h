@@ -30,6 +30,7 @@ public:
     bool isExisting();
     void setExists(bool ex);
     void balanceCells();
+    void balanceReset();
     uint8_t getBalancingState(int cell);
 
 private:
@@ -42,7 +43,7 @@ private:
     float highestTemperature;
     float lowestModuleVolt;
     float highestModuleVolt;
-    uint8_t balanceState[6]; //0 = balancing off for this cell, 1 = balancing currently on
+    bool balanceState[6]; //false = balancing off for this cell, true = balancing currently on
     bool exists;
     int alerts;
     int faults;
@@ -52,4 +53,6 @@ private:
     int badPackets;
 
     uint8_t moduleAddress;     //1 to 0x3E
+
+    void setBalanceState(uint8_t moduleAddress, u_int8_t balance);
 };
